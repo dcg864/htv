@@ -1,4 +1,4 @@
-# XSS Lab Tool - Project Summary
+# HackBench - Project Summary
 
 ## 🎉 Project Complete!
 
@@ -135,7 +135,7 @@ A fully functional, production-ready Python CLI tool for teaching XSS vulnerabil
 ## 🗂️ File Structure
 
 ```
-xss_lab_tool/                          # 📁 Root package
+hackbench/                          # 📁 Root package
 │
 ├── __init__.py                        # Package init
 ├── __main__.py                        # Entry point (python -m)
@@ -194,7 +194,7 @@ xss_lab_tool/                          # 📁 Root package
 
 ### Installation
 ```bash
-cd c:\Users\eric2\Documents\GitHub\htv\2025\11\xss_lab_tool
+cd c:\Users\eric2\Documents\GitHub\htv\2025\11\hackbench
 pip install -r requirements.txt
 ```
 
@@ -204,22 +204,22 @@ pip install -r requirements.txt
 docker run -d -p 80:80 vulnerables/web-dvwa
 
 # Run the tool
-python -m xss_lab_tool --mode all
+python -m hackbench --mode all
 ```
 
 ### Example Commands
 ```bash
 # Reflected XSS only
-python -m xss_lab_tool --mode reflected
+python -m hackbench --mode reflected
 
 # All modules, non-interactive
-python -m xss_lab_tool --mode all --no-interactive
+python -m hackbench --mode all --no-interactive
 
 # Set security to low, run stored XSS
-python -m xss_lab_tool --security-level low --mode stored
+python -m hackbench --security-level low --mode stored
 
 # Custom DVWA instance
-python -m xss_lab_tool --host 192.168.1.100 --port 8080 --confirm-target
+python -m hackbench --host 192.168.1.100 --port 8080 --confirm-target
 ```
 
 ---
@@ -228,7 +228,7 @@ python -m xss_lab_tool --host 192.168.1.100 --port 8080 --confirm-target
 
 ### Run Unit Tests
 ```bash
-cd c:\Users\eric2\Documents\GitHub\htv\2025\11\xss_lab_tool
+cd c:\Users\eric2\Documents\GitHub\htv\2025\11\hackbench
 python -m pytest tests/ -v
 ```
 
@@ -242,7 +242,7 @@ python -m pytest tests/ -v
 - [ ] Logs are created in logs/ directory
 - [ ] Interactive mode pauses for input
 - [ ] Non-interactive mode runs automatically
-- [ ] Help text displays: `python -m xss_lab_tool --help`
+- [ ] Help text displays: `python -m hackbench --help`
 
 ---
 
@@ -377,7 +377,7 @@ All requirements from original spec met:
 
 ## 👥 Credits
 
-**Project**: XSS Lab Tool for DVWA
+**Project**: HackBench for DVWA
 **Purpose**: Educational cybersecurity training
 **Status**: ✅ **COMPLETE & PRODUCTION READY**
 

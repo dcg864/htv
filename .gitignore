@@ -1,0 +1,4 @@
+# Ignore workshop/runtime logs and raw transcripts
+logs/
+**/logs/
+*.log

@@ -30,11 +30,11 @@ class DualLogger:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         # Operational logger - technical details
-        self.operational_logger = logging.getLogger("xss_lab.operational")
+        self.operational_logger = logging.getLogger("hackbench.operational")
         self.operational_logger.setLevel(logging.DEBUG)
 
         op_handler = logging.FileHandler(
-            self.log_dir / f"xss_lab_operational_{timestamp}.log",
+            self.log_dir / f"hackbench_operational_{timestamp}.log",
             encoding='utf-8'
         )
         op_handler.setLevel(logging.DEBUG)
@@ -45,11 +45,11 @@ class DualLogger:
         self.operational_logger.addHandler(op_handler)
 
         # Educational logger - learning narrative
-        self.educational_logger = logging.getLogger("xss_lab.educational")
+        self.educational_logger = logging.getLogger("hackbench.educational")
         self.educational_logger.setLevel(logging.INFO)
 
         edu_handler = logging.FileHandler(
-            self.log_dir / f"xss_lab_explained_{timestamp}.log",
+            self.log_dir / f"hackbench_session_{timestamp}.log",
             encoding='utf-8'
         )
         edu_handler.setLevel(logging.INFO)

@@ -152,6 +152,11 @@ if (document.location.href.indexOf("default=") >= 0) {
                 "explanation": "Breaking out of the <option> tag context"
             },
             {
+                "payload": "English</option><option value='tlh' selected>Klingon (tlh)</option>",
+                "url": f"{base_url}?default=English</option><option value='tlh' selected>Klingon (tlh)</option>",
+                "explanation": "Injects a brand-new Klingon option into the dropdown to prove DOM control"
+            },
+            {
                 "payload": "English</option><img src=x onerror=alert(document.cookie)>",
                 "url": f"{base_url}?default=English</option><img src=x onerror=alert(document.cookie)>",
                 "explanation": "Using img onerror to steal cookies"
@@ -175,32 +180,21 @@ if (document.location.href.indexOf("default=") >= 0) {
         )
 
         self.logger.educational(
-            "\nHow to test manually:\n\n"
-            "1. Copy one of the exploit URLs shown above\n\n"
-            "2. Open a web browser (Chrome, Firefox, etc.)\n\n"
-            "3. Paste the URL into the address bar and press Enter\n\n"
-            "4. Observe the result:\n"
-            "   - If alert() pops up → XSS successful\n"
-            "   - If nothing happens → payload was blocked or encoded\n"
-            "   - Check browser console (F12) for JavaScript errors\n\n"
-            "5. View page source (Ctrl+U):\n"
-            "   - Notice the malicious script is NOT in the source\n"
-            "   - It's only in the DOM after JavaScript executes\n"
-            "   - This is the key characteristic of DOM XSS\n\n"
-            "Important observations:\n"
-            "- The server response is identical for all URLs\n"
-            "- JavaScript processes the URL fragment client-side\n"
-            "- Traditional server-side defenses don't see this attack\n"
-            "- Browser DevTools (F12 → Elements tab) shows the injected code"
-        )
-
-        self.logger.educational(
-            "\n⚠ NOTE: This tool does NOT automate browser interaction.\n"
-            "   True DOM XSS testing requires tools like:\n"
-            "   - Selenium WebDriver\n"
-            "   - Playwright\n"
-            "   - Browser Developer Tools\n"
-            "   - Manual testing"
+            "\nManual walk-through (no Selenium or headless browser required):\n\n"
+            "1. Keep DVWA open in a normal browser tab and log in once.\n"
+            "2. Copy one of the exploit URLs above (the Klingon dropdown payload is a great visual demo).\n"
+            "3. Paste the URL into the address bar and press Enter while connected to Burp if you want an intercept.\n"
+            "4. Interact with the page manually:\n"
+            "   - Click the language dropdown and observe that “Klingon (tlh)” now appears even though the server never offered it.\n"
+            "   - Selecting that option proves the DOM has been rewritten client-side.\n"
+            "   - If you used an alert payload, acknowledge the alert box to continue.\n"
+            "5. Open DevTools (F12) → Elements tab and highlight the <select> element. You will see the injected <option> even though View Source does not show it.\n"
+            "6. Use the Console to run `document.location.href` or `document.querySelector('select').innerHTML` to inspect the live DOM and capture screenshots for evidence.\n"
+            "7. Reset the page by removing everything after `default=` in the URL and pressing Enter. Repeat with another payload to compare behaviors.\n\n"
+            "Key takeaways:\n"
+            "- The network response is identical each time; only the browser DOM changes.\n"
+            "- Manual interaction is enough to validate DOM XSS; automation is optional but not required.\n"
+            "- Capturing screenshots of the injected Klingon option or alert pop-ups makes airtight evidence."
         )
 
     def _get_user_approval(self, prompt: str) -> bool:

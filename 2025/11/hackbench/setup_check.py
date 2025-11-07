@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Setup verification script for XSS Lab Tool.
+Setup verification script for HackBench.
 Checks that all dependencies and prerequisites are met.
 
 Usage: python setup_check.py
@@ -112,7 +112,7 @@ def check_dvwa_connectivity():
 def main():
     """Run all checks"""
     print("="*70)
-    print("XSS Lab Tool - Setup Verification")
+    print("HackBench - Setup Verification")
     print("="*70)
 
     results = []
@@ -152,8 +152,8 @@ def main():
 
     if passed == total:
         print("✓ ALL CHECKS PASSED!")
-        print("\nYou're ready to use XSS Lab Tool:")
-        print("  python -m xss_lab_tool --mode all")
+        print("\nYou're ready to use HackBench:")
+        print("  python -m hackbench --mode all")
         return 0
     else:
         print(f"✗ {total - passed}/{total} checks failed")

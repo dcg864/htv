@@ -1,4 +1,4 @@
-# Quick Start Guide - XSS Lab Tool
+# Quick Start Guide - HackBench
 
 Get up and running in **5 minutes**!
 
@@ -22,7 +22,7 @@ Wait ~30 seconds for DVWA to start, then:
 ## Step 2: Install Dependencies (1 minute)
 
 ```bash
-cd c:\Users\eric2\Documents\GitHub\htv\2025\11\xss_lab_tool
+cd c:\Users\eric2\Documents\GitHub\htv\2025\11\hackbench
 pip install -r requirements.txt
 ```
 
@@ -34,14 +34,14 @@ pip install -r requirements.txt
 
 **Option A - Using run.py (EASIEST):**
 ```bash
-cd c:\Users\eric2\Documents\GitHub\htv\2025\11\xss_lab_tool
+cd c:\Users\eric2\Documents\GitHub\htv\2025\11\hackbench
 python run.py --mode reflected
 ```
 
 **Option B - Run as module (from parent directory):**
 ```bash
 cd c:\Users\eric2\Documents\GitHub\htv\2025\11
-python -m xss_lab_tool --mode reflected
+python -m hackbench --mode reflected
 ```
 
 **What happens:**
@@ -55,21 +55,21 @@ python -m xss_lab_tool --mode reflected
 
 ## Example Commands
 
-**Note**: Run from parent directory (`cd c:\Users\eric2\Documents\GitHub\htv\2025\11`) or use `python cli.py` from inside xss_lab_tool/
+**Note**: Run from parent directory (`cd c:\Users\eric2\Documents\GitHub\htv\2025\11`) or use `python cli.py` from inside hackbench/
 
 ### Run all three XSS types
 ```bash
-python -m xss_lab_tool --mode all
+python -m hackbench --mode all
 ```
 
 ### Non-interactive mode (auto-approve everything)
 ```bash
-python -m xss_lab_tool --mode all --no-interactive
+python -m hackbench --mode all --no-interactive
 ```
 
 ### Set DVWA to low security first
 ```bash
-python -m xss_lab_tool --security-level low --mode reflected
+python -m hackbench --security-level low --mode reflected
 ```
 
 ---
@@ -115,7 +115,7 @@ After completing the basic runs:
 
 1. **Try different security levels**
    ```bash
-   python -m xss_lab_tool --security-level medium --mode reflected
+   python -m hackbench --security-level medium --mode reflected
    ```
 
 2. **Review the logs**
@@ -143,5 +143,5 @@ After completing the basic runs:
 **You're ready! Start with:**
 ```bash
 cd c:\Users\eric2\Documents\GitHub\htv\2025\11
-python -m xss_lab_tool --mode reflected
+python -m hackbench --mode reflected
 ```

@@ -1,4 +1,4 @@
-# Installation Guide - XSS Lab Tool
+# Installation Guide - HackBench
 
 Complete installation instructions for Windows, macOS, and Linux.
 
@@ -32,7 +32,7 @@ pip --version
 ### Step 1: Navigate to Project Directory
 
 ```bash
-cd c:\Users\eric2\Documents\GitHub\htv\2025\11\xss_lab_tool
+cd c:\Users\eric2\Documents\GitHub\htv\2025\11\hackbench
 ```
 
 ### Step 2: Install Python Dependencies
@@ -57,7 +57,7 @@ python setup_check.py
 Expected output:
 ```
 ======================================================================
-XSS Lab Tool - Setup Verification
+HackBench - Setup Verification
 ======================================================================
 Checking Python version... ✓ Python 3.13.9
 
@@ -207,7 +207,7 @@ deactivate
 ### Quick Test Run
 
 ```bash
-python -m xss_lab_tool --help
+python -m hackbench --help
 ```
 
 Expected: Help text displays with all options
@@ -215,7 +215,7 @@ Expected: Help text displays with all options
 ### Full Test (Requires DVWA)
 
 ```bash
-python -m xss_lab_tool --mode reflected --no-interactive
+python -m hackbench --mode reflected --no-interactive
 ```
 
 Expected: Tool runs, authenticates with DVWA, attempts reflected XSS
@@ -226,14 +226,14 @@ Expected: Tool runs, authenticates with DVWA, attempts reflected XSS
 
 ### Project is Ready When:
 - ✅ `python setup_check.py` shows all checks passed
-- ✅ `python -m xss_lab_tool --help` displays help text
+- ✅ `python -m hackbench --help` displays help text
 - ✅ DVWA is accessible at http://localhost
 - ✅ No import errors when running the tool
 
 ### Next Steps:
 1. Read [QUICKSTART.md](QUICKSTART.md) for first run
 2. Read [README.md](README.md) for detailed usage
-3. Start with: `python -m xss_lab_tool --mode reflected`
+3. Start with: `python -m hackbench --mode reflected`
 
 ---
 
@@ -262,7 +262,7 @@ pip uninstall requests beautifulsoup4 colorama pytest
 
 # Remove project directory
 cd ..
-rm -rf xss_lab_tool  # or rmdir /s xss_lab_tool on Windows
+rm -rf hackbench  # or rmdir /s hackbench on Windows
 ```
 
 ---

@@ -1,4 +1,4 @@
-# XSS Lab Tool - Project Status
+# HackBench - Project Status
 
 ## ✅ **STATUS: FULLY FUNCTIONAL**
 
@@ -10,14 +10,14 @@ Last tested: Successfully authenticated with DVWA and ran Reflected XSS module
 
 ### **Method 1: Using run.py (EASIEST)**
 ```bash
-cd c:\Users\eric2\Documents\GitHub\htv\2025\11\xss_lab_tool
+cd c:\Users\eric2\Documents\GitHub\htv\2025\11\hackbench
 python run.py --mode all
 ```
 
 ### **Method 2: As Python Module**
 ```bash
 cd c:\Users\eric2\Documents\GitHub\htv\2025\11
-python -m xss_lab_tool --mode all
+python -m hackbench --mode all
 ```
 
 ---
@@ -33,7 +33,7 @@ python -m xss_lab_tool --mode all
 - All Unicode characters now display correctly
 
 ### 2. Module Import Issues (FIXED ✓)
-**Issue**: `python -m xss_lab_tool` failed when run from inside project directory
+**Issue**: `python -m hackbench` failed when run from inside project directory
 
 **Solution**:
 - Created `run.py` wrapper script for easy execution from project directory
@@ -45,7 +45,7 @@ python -m xss_lab_tool --mode all
 
 ### Last Successful Run
 ```bash
-$ python -m xss_lab_tool --mode reflected --skip-banner
+$ python -m hackbench --mode reflected --skip-banner
 ======================================================================
 XSS LAB TOOL - Educational XSS Demonstration
 ======================================================================
@@ -161,7 +161,7 @@ None currently! All reported issues have been fixed.
 
 3. **Run the tool**:
    ```bash
-   cd c:\Users\eric2\Documents\GitHub\htv\2025\11\xss_lab_tool
+   cd c:\Users\eric2\Documents\GitHub\htv\2025\11\hackbench
    python run.py --mode all
    ```
 

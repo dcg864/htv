@@ -11,16 +11,18 @@ from bs4 import BeautifulSoup
 class HTTPClient:
     """HTTP client wrapper with integrated logging."""
 
-    def __init__(self, session: requests.Session, logger):
+    def __init__(self, session: requests.Session, logger, request_recorder=None):
         """
         Initialize HTTP client.
 
         Args:
             session: requests.Session instance (from authenticator)
             logger: DualLogger instance
+            request_recorder: Optional BurpRequestRecorder for raw HTTP capture
         """
         self.session = session
         self.logger = logger
+        self.request_recorder = request_recorder
 
     def get(self, url: str, params: Optional[Dict[str, Any]] = None, timeout: int = 10) -> Optional[requests.Response]:
         """
@@ -34,15 +36,7 @@ class HTTPClient:
         Returns:
             Response object or None on failure
         """
-        try:
-            self.logger.http_request("GET", url, params)
-            response = self.session.get(url, params=params, timeout=timeout)
-            self.logger.http_response(response.status_code, response.text[:200])
-            return response
-
-        except requests.exceptions.RequestException as e:
-            self.logger.operational(f"GET request failed: {e}", "ERROR")
-            return None
+        return self._send("GET", url, params=params, timeout=timeout)
 
     def post(self, url: str, data: Optional[Dict[str, Any]] = None, timeout: int = 10) -> Optional[requests.Response]:
         """
@@ -56,14 +50,39 @@ class HTTPClient:
         Returns:
             Response object or None on failure
         """
+        return self._send("POST", url, data=data, timeout=timeout)
+
+    def _send(
+        self,
+        method: str,
+        url: str,
+        params: Optional[Dict[str, Any]] = None,
+        data: Optional[Dict[str, Any]] = None,
+        timeout: int = 10,
+    ) -> Optional[requests.Response]:
+        """Prepare, optionally record, and send an HTTP request."""
         try:
-            self.logger.http_request("POST", url, data)
-            response = self.session.post(url, data=data, timeout=timeout)
+            request = requests.Request(
+                method=method.upper(),
+                url=url,
+                params=params,
+                data=data,
+                headers=dict(self.session.headers),
+            )
+            prepared = self.session.prepare_request(request)
+
+            log_payload = params if method.upper() == "GET" else data
+            self.logger.http_request(method.upper(), prepared.url, log_payload)
+
+            if self.request_recorder:
+                self.request_recorder.record(prepared)
+
+            response = self.session.send(prepared, timeout=timeout)
             self.logger.http_response(response.status_code, response.text[:200])
             return response
 
         except requests.exceptions.RequestException as e:
-            self.logger.operational(f"POST request failed: {e}", "ERROR")
+            self.logger.operational(f"{method.upper()} request failed: {e}", "ERROR")
             return None
 
     def check_xss_reflection(self, response: requests.Response, payload: str) -> bool:
@@ -162,3 +181,11 @@ class HTTPClient:
         except Exception as e:
             self.logger.operational(f"Error extracting form inputs: {e}", "ERROR")
             return {}
+
+    def get_user_agent(self) -> str:
+        """Return the session's configured User-Agent string."""
+        return self.session.headers.get("User-Agent", "python-requests")
+
+    def get_cookie(self, name: str) -> Optional[str]:
+        """Return a cookie value if present on the session."""
+        return self.session.cookies.get(name)

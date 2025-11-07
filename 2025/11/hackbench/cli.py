@@ -6,7 +6,6 @@ Provides interactive, educational XSS demonstrations against DVWA.
 import argparse
 import sys
 import codecs
-from pathlib import Path
 
 # Fix Windows console encoding for Unicode characters
 if sys.platform == 'win32':
@@ -21,29 +20,31 @@ from .modules.reflected import ReflectedXSSModule
 from .modules.stored import StoredXSSModule
 from .modules.dom_based import DOMXSSModule
 from .utils.validators import display_safety_banner, confirm_authorization, preflight_check
+from .utils.banner import get_current_tagline
+from .utils.request_recorder import BurpRequestRecorder
 
 
 def parse_arguments():
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
-        description="XSS Lab Tool - Interactive educational XSS demonstration tool for DVWA",
+        description="HackBench | Educational XSS lab companion with a rotating safety banner",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Run all XSS modules interactively
-  python -m xss_lab_tool --mode all
+  python -m hackbench --mode all
 
   # Run only reflected XSS
-  python -m xss_lab_tool --mode reflected
+  python -m hackbench --mode reflected
 
   # Target DVWA on custom port
-  python -m xss_lab_tool --host localhost --port 8080
+  python -m hackbench --host localhost --port 8080
 
   # Non-interactive mode (auto-approve all steps)
-  python -m xss_lab_tool --mode all --no-interactive
+  python -m hackbench --mode all --no-interactive
 
   # Custom credentials
-  python -m xss_lab_tool --username admin --password admin123
+  python -m hackbench --username admin --password admin123
         """
     )
 
@@ -124,11 +125,13 @@ def main():
 
     # Display safety banner
     if not args.skip_banner:
-        display_safety_banner()
+        tagline = display_safety_banner()
 
         if not confirm_authorization():
             print("\n❌ Authorization not confirmed. Exiting.")
             return 1
+    else:
+        tagline = get_current_tagline(force_refresh=True)
 
     # Initialize configuration
     target = TargetConfig(host=args.host, port=args.port, use_https=args.https)
@@ -138,10 +141,11 @@ def main():
 
     # Initialize logger
     logger = DualLogger(log_dir=args.log_dir)
+    request_recorder = BurpRequestRecorder(args.log_dir, logger)
 
     try:
         logger.educational(f"\n{'='*70}")
-        logger.educational("XSS LAB TOOL - Educational XSS Demonstration")
+        logger.educational(f"HACKBENCH - {tagline}")
         logger.educational(f"{'='*70}")
         logger.educational(f"Target: {target.base_url}")
         logger.educational(f"Mode: {args.mode}")
@@ -196,7 +200,11 @@ def main():
                 logger.educational(f"⚠ Failed to change security level")
 
         # Initialize HTTP client
-        http_client = HTTPClient(auth.get_session(), logger)
+        http_client = HTTPClient(
+            auth.get_session(),
+            logger,
+            request_recorder=request_recorder,
+        )
 
         # Run selected modules
         interactive = not args.no_interactive
@@ -237,6 +245,7 @@ def main():
         logger.educational(f"Modules run: {', '.join(modules_run)}")
         logger.educational(f"Modules succeeded: {', '.join(modules_succeeded) if modules_succeeded else 'None'}")
         logger.educational(f"\nLogs saved to: {args.log_dir}/")
+        logger.educational(f"Raw HTTP replays: {request_recorder.output_path}")
         logger.educational("="*70)
 
         return 0

