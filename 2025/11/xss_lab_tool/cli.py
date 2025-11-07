@@ -5,7 +5,13 @@ Provides interactive, educational XSS demonstrations against DVWA.
 
 import argparse
 import sys
+import codecs
 from pathlib import Path
+
+# Fix Windows console encoding for Unicode characters
+if sys.platform == 'win32':
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
 
 from .core.target_config import TargetConfig
 from .core.logger import DualLogger

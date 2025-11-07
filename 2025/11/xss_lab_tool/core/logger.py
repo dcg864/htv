@@ -4,6 +4,7 @@ Provides both operational (debug/trace) and educational (learning artifact) logs
 """
 
 import logging
+import sys
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
@@ -33,7 +34,8 @@ class DualLogger:
         self.operational_logger.setLevel(logging.DEBUG)
 
         op_handler = logging.FileHandler(
-            self.log_dir / f"xss_lab_operational_{timestamp}.log"
+            self.log_dir / f"xss_lab_operational_{timestamp}.log",
+            encoding='utf-8'
         )
         op_handler.setLevel(logging.DEBUG)
         op_formatter = logging.Formatter(
@@ -47,15 +49,16 @@ class DualLogger:
         self.educational_logger.setLevel(logging.INFO)
 
         edu_handler = logging.FileHandler(
-            self.log_dir / f"xss_lab_explained_{timestamp}.log"
+            self.log_dir / f"xss_lab_explained_{timestamp}.log",
+            encoding='utf-8'
         )
         edu_handler.setLevel(logging.INFO)
         edu_formatter = logging.Formatter('%(message)s')
         edu_handler.setFormatter(edu_formatter)
         self.educational_logger.addHandler(edu_handler)
 
-        # Console handler for user feedback
-        console_handler = logging.StreamHandler()
+        # Console handler for user feedback (with proper encoding)
+        console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(logging.INFO)
         console_formatter = logging.Formatter('%(message)s')
         console_handler.setFormatter(console_formatter)

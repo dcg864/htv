@@ -31,7 +31,16 @@ pip install -r requirements.txt
 ## Step 3: Run Your First Attack! (2 minutes)
 
 ### Try Reflected XSS
+
+**Option A - Using run.py (EASIEST):**
 ```bash
+cd c:\Users\eric2\Documents\GitHub\htv\2025\11\xss_lab_tool
+python run.py --mode reflected
+```
+
+**Option B - Run as module (from parent directory):**
+```bash
+cd c:\Users\eric2\Documents\GitHub\htv\2025\11
 python -m xss_lab_tool --mode reflected
 ```
 
@@ -45,6 +54,8 @@ python -m xss_lab_tool --mode reflected
 ---
 
 ## Example Commands
+
+**Note**: Run from parent directory (`cd c:\Users\eric2\Documents\GitHub\htv\2025\11`) or use `python cli.py` from inside xss_lab_tool/
 
 ### Run all three XSS types
 ```bash
@@ -129,4 +140,8 @@ After completing the basic runs:
 
 ---
 
-**You're ready! Start with:** `python -m xss_lab_tool --mode reflected`
+**You're ready! Start with:**
+```bash
+cd c:\Users\eric2\Documents\GitHub\htv\2025\11
+python -m xss_lab_tool --mode reflected
+```
