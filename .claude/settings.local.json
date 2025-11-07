@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(python setup_check.py:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
